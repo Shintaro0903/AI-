@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <link rel="manifest" href="manifest.json" />
+  <title>生成AIパスポート学習</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#ffffff; --ink:#172033; --muted:#6b7280;
+      --accent:#111827; --accent2:#2563eb; --ok:#166534; --ng:#b91c1c;
+      --line:#e5e7eb; --soft:#eef2ff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink)}
+    header{position:sticky;top:0;z-index:5;background:rgba(245,247,251,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .wrap{max-width:760px;margin:auto;padding:14px 16px}
+    .title{font-weight:800;font-size:20px}
+    .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(17,24,39,.05)}
+    .hero{background:linear-gradient(135deg,#111827,#334155);color:#fff}
+    .hero .muted{color:#cbd5e1}
+    button{border:0;border-radius:14px;padding:13px 14px;font-weight:700;font-size:15px;cursor:pointer}
+    .primary{background:#111827;color:#fff;width:100%}
+    .secondary{background:#eef2ff;color:#1e40af;width:100%}
+    .ghost{background:#fff;border:1px solid var(--line);color:#111827;width:100%}
+    .danger{background:#fee2e2;color:#991b1b;width:100%}
+    .small{padding:9px 10px;font-size:13px}
+    .stat{font-size:26px;font-weight:800}
+    .muted{color:var(--muted)}
+    .bar{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+    .bar > div{height:100%;background:#2563eb}
+    nav{position:sticky;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:4}
+    nav button{background:transparent;border-radius:0;color:#4b5563;padding:12px 6px;font-size:12px}
+    nav button.active{color:#111827;font-weight:800}
+    .screen{display:none}.screen.active{display:block}
+    .tag{display:inline-block;background:#f3f4f6;border-radius:999px;padding:6px 10px;font-size:12px;margin:3px 4px 3px 0}
+    .q{font-size:19px;font-weight:800;line-height:1.55;margin:8px 0 14px}
+    .choice{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);margin:8px 0;padding:14px;border-radius:14px}
+    .choice.correct{border-color:#16a34a;background:#f0fdf4}
+    .choice.wrong{border-color:#dc2626;background:#fef2f2}
+    .explain{margin-top:12px;padding:13px;border-radius:14px;background:#f8fafc;border:1px solid var(--line);line-height:1.6}
+    .sectionTitle{font-weight:800;font-size:18px;margin:10px 0}
+    .point{padding:14px;border-left:4px solid #2563eb;background:#eff6ff;border-radius:10px;margin:10px 0}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .listItem{padding:13px 0;border-bottom:1px solid var(--line)}
+    .pill{font-size:11px;padding:4px 8px;border-radius:999px;background:#e0e7ff;color:#3730a3}
+    textarea,input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:#fff}
+    .footerSpace{height:78px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="title">生成AIパスポート学習</div>
+    <div class="sub">3分で学ぶ・間違いを復習・休日は教本で深掘り</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="home" class="screen active">
+    <div class="card hero">
+      <div class="muted">今日のおすすめ</div>
+      <div style="font-size:25px;font-weight:800;margin:6px 0 4px">🚬 3分学習</div>
+      <div class="muted">重要ポイント3つ＋確認3問。途中で閉じても続きから。</div>
+      <div style="margin-top:14px"><button class="secondary" onclick="startQuick()">3分学習を始める</button></div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="card">
+        <div class="muted">正答率</div>
+        <div class="stat" id="homeAccuracy">-</div>
+      </div>
+      <div class="card">
+        <div class="muted">学習回数</div>
+        <div class="stat" id="homeSessions">0</div>
+      </div>
+      <div class="card">
+        <div class="muted">苦手問題</div>
+        <div class="stat" id="homeWeak">0</div>
+      </div>
+      <div class="card">
+        <div class="muted">連続学習</div>
+        <div class="stat" id="homeStreak">0日</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="sectionTitle">現在の登録範囲</div>
+      <div class="tag">P16〜17 AIの定義</div>
+      <div class="tag">P18 AIの出発点と現在</div>
+      <div class="tag">P19 AIと社会</div>
+      <div class="tag">P20 AIに知能をもたらす仕組み</div>
+      <p class="muted" style="margin-bottom:0">P21以降は教本写真を追加すると、このアプリに教材として追記できます。</p>
+    </div>
+  </section>
+
+  <section id="learn" class="screen">
+    <div id="learnContent"></div>
+  </section>
+
+  <section id="quiz" class="screen">
+    <div class="card">
+      <div class="row">
+        <span class="pill" id="quizMode">問題演習</span>
+        <span class="muted" id="quizCount"></span>
+      </div>
+      <div class="q" id="questionText">問題を開始してください。</div>
+      <div id="choices"></div>
+      <div id="explanation"></div>
+      <div style="margin-top:12px">
+        <button class="primary" id="nextBtn" onclick="nextQuestion()" style="display:none">次の問題</button>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <button class="secondary" onclick="startQuiz('normal')">ランダム10問</button>
+      <button class="ghost" onclick="startQuiz('weak')">苦手問題だけ</button>
+    </div>
+  </section>
+
+  <section id="progress" class="screen">
+    <div class="card">
+      <div class="sectionTitle">学習記録</div>
+      <div class="listItem row"><span>回答数</span><strong id="pAnswered">0</strong></div>
+      <div class="listItem row"><span>正解数</span><strong id="pCorrect">0</strong></div>
+      <div class="listItem row"><span>正答率</span><strong id="pAccuracy">-</strong></div>
+      <div class="listItem row"><span>学習回数</span><strong id="pSessions">0</strong></div>
+      <div class="listItem row"><span>連続学習</span><strong id="pStreak">0日</strong></div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="sectionTitle">分野別</div>
+      <div id="categoryStats"></div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="sectionTitle">教材追加用</div>
+      <p class="muted">今後こちらでP21以降を追加した更新版を作れます。手動でバックアップしたい場合は下記を利用してください。</p>
+      <button class="ghost small" onclick="exportData()">学習記録をバックアップ</button>
+      <div style="height:8px"></div>
+      <button class="danger small" onclick="resetData()">学習記録をリセット</button>
+    </div>
+  </section>
+
+  <div class="footerSpace"></div>
+</main>
+
+<nav>
+  <button class="active" onclick="showScreen('home',this)">🏠<br>ホーム</button>
+  <button onclick="showScreen('learn',this);renderLearn()">📚<br>ポイント</button>
+  <button onclick="showScreen('quiz',this)">📝<br>問題</button>
+  <button onclick="showScreen('progress',this);renderProgress()">📊<br>記録</button>
+</nav>
+
+<script>
+const LESSONS = [
+  {
+    id:"p16-17",
+    title:"P16〜17 AIの定義",
+    category:"AIの基礎",
+    points:[
+      "AIは Artificial Intelligence（人工知能）の略。",
+      "AIには、専門家の間でも完全に統一された単一の定義があるわけではない。",
+      "生成AIはAI全体の一分野。AI＝生成AIではない。"
+    ]
+  },
+  {
+    id:"p18",
+    title:"P18 AIの出発点と現在",
+    category:"AIの歴史",
+    points:[
+      "「AI」という用語は1956年のダートマス会議で初めて使用されたとされる。",
+      "AI研究の背景には、第二次世界大戦や計算機の発展がある。",
+      "現在の活用分野には、機械学習・深層学習・自然言語処理・知識表現・パターン認識などがある。",
+      "将来の活用期待分野として、自動運転・音声認識・画像認識・医療診断・金融予測などが挙げられる。"
+    ]
+  },
+  {
+    id:"p19",
+    title:"P19 AIと社会との関係",
+    category:"AIと社会",
+    points:[
+      "ディープラーニングの進化により、画像認識や自然言語処理などの精度が大きく向上した。",
+      "AIの普及には、人の仕事への影響、プライバシー、倫理などの問題が伴う。",
+      "AIの判断に偏りや差別的要素がないか、責任や人間の介入をどう設計するかが重要。"
+    ]
+  },
+  {
+    id:"p20",
+    title:"P20 AIに知能をもたらす仕組み",
+    category:"機械学習",
+    points:[
+      "AIに知能をもたらす代表的な仕組みは、ルールベースと機械学習。",
+      "ルールベースは、人間が事前に作ったルールや知識をプログラムに組み込む。",
+      "機械学習は、機械がデータからパターンを見つけ、予測や判断を行う。",
+      "機械学習の主な3種類は、教師あり学習・教師なし学習・強化学習。"
+    ]
+  }
+];
+
+const QUESTIONS = [
+  {id:"q1",cat:"AIの基礎",q:"AI（人工知能）の英語表記として正しいものは？",c:["Artificial Intelligence","Automatic Internet","Advanced Information","Artificial Internet"],a:0,e:"AIは Artificial Intelligence の略です。"},
+  {id:"q2",cat:"AIの基礎",q:"AIの定義について最も適切なものは？",c:["世界共通で完全に統一された定義がある","研究者や専門家によって捉え方が異なる場合がある","生成AIだけを指す","必ず人間と同じように考える"],a:1,e:"AIには完全に統一された唯一の定義があるわけではありません。"},
+  {id:"q3",cat:"AIの基礎",q:"AIと生成AIの関係として正しいものは？",c:["同じ意味","AIは生成AIの一種","生成AIはAIの一分野","関係はない"],a:2,e:"生成AIはAI全体の中の一分野です。"},
+  {id:"q4",cat:"AIの歴史",q:"「AI」という用語が初めて使用されたとされる会議は？",c:["ダートマス会議","チューリング会議","シリコンバレー会議","ディープラーニング会議"],a:0,e:"1956年のダートマス会議です。"},
+  {id:"q5",cat:"AIの歴史",q:"AIという用語が初めて使用されたとされる年は？",c:["1945年","1956年","1970年","2000年"],a:1,e:"覚え方は『1956年＝ダートマス会議』です。"},
+  {id:"q6",cat:"AIの歴史",q:"AI研究が始まった背景として最も適切なものは？",c:["スマートフォンの普及","SNSの普及","第二次世界大戦や計算機の発展","動画配信の普及"],a:2,e:"戦時中の暗号解析や複雑な計算などの需要、計算機の発展が背景にあります。"},
+  {id:"q7",cat:"機械学習",q:"ルールベースの説明として正しいものは？",c:["機械が自動でルールを発見する","人間が事前に作ったルールをプログラムに組み込む","データを一切使わない","必ず深層学習を使う"],a:1,e:"ルールベースは人間がルールを作る方式です。"},
+  {id:"q8",cat:"機械学習",q:"機械学習の説明として最も適切なものは？",c:["人間が全ルールを手作業で登録する","機械がデータからパターンを見つけ予測や判断を行う","通信速度を上げる","検索専用の技術"],a:1,e:"機械学習では、データから機械自身がパターンを学びます。"},
+  {id:"q9",cat:"機械学習",q:"機械学習の主な3種類の組み合わせは？",c:["教師あり・教師なし・強化学習","教師あり・生成学習・検索学習","深層学習・画像認識・自然言語処理","ルールベース・生成AI・強化学習"],a:0,e:"教師あり学習・教師なし学習・強化学習の3つをまず押さえましょう。"},
+  {id:"q10",cat:"AIと社会",q:"AI活用の拡大で問題になり得るものは？",c:["AIには法律が適用されないこと","プライバシーや倫理に関する問題","AIは個人データを扱えないこと","AIは必ず正しいこと"],a:1,e:"プライバシー、倫理、雇用への影響、偏りや責任などが重要な論点です。"},
+  {id:"q11",cat:"AIと社会",q:"AIの意思決定について重要な観点は？",c:["必ずAIだけに任せる","偏りや差別的要素がないか確認する","人間は一切介入しない","説明は不要"],a:1,e:"アルゴリズムの偏り、責任、人間の介入の程度などが重要です。"},
+  {id:"q12",cat:"AIの歴史",q:"現在のAI活用分野に含まれるものは？",c:["自然言語処理","郵便配達のみ","紙の帳簿だけ","電卓だけ"],a:0,e:"自然言語処理（NLP）は代表的なAI活用分野です。"}
+];
+
+const key="genai_passport_v1";
+let state=JSON.parse(localStorage.getItem(key)||"null")||{
+  answered:0,correct:0,sessions:0,weak:{},byCat:{},dates:[],lastLesson:0
+};
+let current=[],idx=0,answeredCurrent=false;
+
+function save(){localStorage.setItem(key,JSON.stringify(state));renderHome();}
+function touchSession(){
+  const d=new Date().toISOString().slice(0,10);
+  if(!state.dates.includes(d)){state.dates.push(d);state.sessions++}
+  save();
+}
+function streak(){
+  const days=[...state.dates].sort().reverse();
+  if(!days.length)return 0;
+  let count=0, cur=new Date();
+  cur.setHours(0,0,0,0);
+  for(let i=0;i<365;i++){
+    const s=cur.toISOString().slice(0,10);
+    if(days.includes(s)){count++;cur.setDate(cur.getDate()-1)}
+    else if(i===0){cur.setDate(cur.getDate()-1)}
+    else break;
+  }
+  return count;
+}
+function renderHome(){
+  document.getElementById("homeAccuracy").textContent=state.answered?Math.round(state.correct/state.answered*100)+"%":"-";
+  document.getElementById("homeSessions").textContent=state.sessions;
+  document.getElementById("homeWeak").textContent=Object.keys(state.weak).length;
+  document.getElementById("homeStreak").textContent=streak()+"日";
+}
+function showScreen(id,btn){
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+}
+function renderLearn(){
+  const box=document.getElementById("learnContent");
+  box.innerHTML=LESSONS.map((l,i)=>`
+    <div class="card" style="margin-bottom:12px">
+      <div class="row"><div class="sectionTitle">${l.title}</div><span class="pill">${l.category}</span></div>
+      ${l.points.map(p=>`<div class="point">${p}</div>`).join("")}
+      <button class="secondary small" onclick="startLessonQuiz('${l.category}')">この分野を3問</button>
+    </div>`).join("");
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function startQuick(){
+  touchSession();
+  showScreen("learn",document.querySelectorAll("nav button")[1]);
+  const start=state.lastLesson%LESSONS.length;
+  const picks=[LESSONS[start],LESSONS[(start+1)%LESSONS.length],LESSONS[(start+2)%LESSONS.length]];
+  state.lastLesson=(start+1)%LESSONS.length; save();
+  document.getElementById("learnContent").innerHTML=`
+    <div class="card hero">
+      <div class="muted">3分学習</div>
+      <div class="sectionTitle" style="color:white">今日の重要ポイント</div>
+      ${picks.map(x=>`<div class="point" style="background:white;color:#172033;border-left-color:#60a5fa"><b>${x.title}</b><br>${x.points[Math.floor(Math.random()*x.points.length)]}</div>`).join("")}
+      <button class="secondary" onclick="startQuiz('quick')">確認3問へ</button>
+    </div>`;
+}
+function startLessonQuiz(cat){
+  touchSession();
+  current=shuffle(QUESTIONS.filter(q=>q.cat===cat)).slice(0,3);
+  idx=0; showScreen("quiz",document.querySelectorAll("nav button")[2]); drawQuestion("分野別3問");
+}
+function startQuiz(mode){
+  touchSession();
+  if(mode==="weak"){
+    const ids=Object.keys(state.weak);
+    current=QUESTIONS.filter(q=>ids.includes(q.id));
+    if(!current.length){alert("苦手問題はまだありません。");return;}
+    current=shuffle(current).slice(0,10);
+    drawQuestion("苦手復習");
+  }else if(mode==="quick"){
+    current=shuffle(QUESTIONS).slice(0,3);
+    showScreen("quiz",document.querySelectorAll("nav button")[2]);
+    drawQuestion("3分学習");
+  }else{
+    current=shuffle(QUESTIONS).slice(0,10);
+    drawQuestion("ランダム10問");
+  }
+  idx=0;
+}
+function drawQuestion(mode){
+  if(!current.length)return;
+  answeredCurrent=false;
+  const q=current[idx];
+  document.getElementById("quizMode").textContent=mode||"問題演習";
+  document.getElementById("quizCount").textContent=`${idx+1}/${current.length}`;
+  document.getElementById("questionText").textContent=q.q;
+  document.getElementById("choices").innerHTML=q.c.map((x,i)=>`<button class="choice" onclick="answer(${i},this)">${String.fromCharCode(65+i)}. ${x}</button>`).join("");
+  document.getElementById("explanation").innerHTML="";
+  document.getElementById("nextBtn").style.display="none";
+}
+function answer(i,el){
+  if(answeredCurrent)return;
+  answeredCurrent=true;
+  const q=current[idx];
+  state.answered++;
+  state.byCat[q.cat]=state.byCat[q.cat]||{a:0,c:0};
+  state.byCat[q.cat].a++;
+  document.querySelectorAll(".choice").forEach((b,n)=>{
+    if(n===q.a)b.classList.add("correct");
+    if(n===i && i!==q.a)b.classList.add("wrong");
+    b.disabled=true;
+  });
+  if(i===q.a){
+    state.correct++; state.byCat[q.cat].c++;
+    if(state.weak[q.id]){
+      state.weak[q.id]--;
+      if(state.weak[q.id]<=0)delete state.weak[q.id];
+    }
+    document.getElementById("explanation").innerHTML=`<div class="explain"><b style="color:#166534">⭕ 正解</b><br>${q.e}</div>`;
+  }else{
+    state.weak[q.id]=(state.weak[q.id]||0)+1;
+    document.getElementById("explanation").innerHTML=`<div class="explain"><b style="color:#b91c1c">❌ 不正解</b><br>${q.e}</div>`;
+  }
+  save();
+  document.getElementById("nextBtn").style.display="block";
+}
+function nextQuestion(){
+  idx++;
+  if(idx>=current.length){
+    alert("終了です。お疲れさまでした！");
+    renderProgress();
+    showScreen("progress",document.querySelectorAll("nav button")[3]);
+    return;
+  }
+  drawQuestion(document.getElementById("quizMode").textContent);
+}
+function renderProgress(){
+  document.getElementById("pAnswered").textContent=state.answered;
+  document.getElementById("pCorrect").textContent=state.correct;
+  document.getElementById("pAccuracy").textContent=state.answered?Math.round(state.correct/state.answered*100)+"%":"-";
+  document.getElementById("pSessions").textContent=state.sessions;
+  document.getElementById("pStreak").textContent=streak()+"日";
+  const cats=[...new Set(QUESTIONS.map(q=>q.cat))];
+  document.getElementById("categoryStats").innerHTML=cats.map(c=>{
+    const s=state.byCat[c]||{a:0,c:0};
+    const p=s.a?Math.round(s.c/s.a*100):0;
+    return `<div class="listItem"><div class="row"><span>${c}</span><strong>${s.a?p+"%":"未回答"}</strong></div><div class="bar" style="margin-top:8px"><div style="width:${p}%"></div></div></div>`;
+  }).join("");
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="genai_study_backup.json";a.click();
+}
+function resetData(){
+  if(confirm("学習記録をすべてリセットしますか？")){
+    localStorage.removeItem(key);location.reload();
+  }
+}
+renderHome();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}
+</script>
+</body>
+</html>
